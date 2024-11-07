@@ -1,0 +1,13 @@
+---
+title: "linear_models"
+author: "Xiaoni Xu"
+date: "2024-11-07"
+output: html_document
+---
+```{r, message = FALSE}
+library(tidyverse)
+library(p8105.datasets)
+
+set.seed(1)
+```
+

@@ -361,6 +361,126 @@ display: none;
 library(p8105.datasets)
 
 set.seed(1)</code></pre>
+<p>Do some data cleaning</p>
+<pre class="r"><code>data(&quot;nyc_airbnb&quot;)
+
+nyc_airbnb =
+  nyc_airbnb %&gt;% 
+  mutate(stars = review_scores_location / 2) %&gt;% 
+  rename(
+    borough = neighbourhood_group,
+    neighborhood = neighbourhood # AMERICA FIRST
+  ) %&gt;% 
+  filter(
+    borough != &quot;Staten Island&quot;
+  ) %&gt;% 
+  select(price, stars, borough, neighborhood, room_type) %&gt;% 
+  mutate(
+    borough = fct_infreq(borough),
+    room_type = fct_infreq(room_type)
+  )</code></pre>
+<div id="fit-some-models" class="section level3">
+<h3>Fit some models</h3>
+<p>Start relatively simple</p>
+<pre class="r"><code>fit = lm(price ~ stars, data = nyc_airbnb)
+
+summary(fit) # a lot of stuff comes out</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = price ~ stars, data = nyc_airbnb)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -144.1  -69.1  -32.0   25.9 9889.0 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  -66.500     11.893  -5.591 2.27e-08 ***
+## stars         44.115      2.515  17.538  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 183.8 on 30528 degrees of freedom
+##   (9962 observations deleted due to missingness)
+## Multiple R-squared:  0.009974,   Adjusted R-squared:  0.009942 
+## F-statistic: 307.6 on 1 and 30528 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>names(summary(fit))</code></pre>
+<pre><code>##  [1] &quot;call&quot;          &quot;terms&quot;         &quot;residuals&quot;     &quot;coefficients&quot; 
+##  [5] &quot;aliased&quot;       &quot;sigma&quot;         &quot;df&quot;            &quot;r.squared&quot;    
+##  [9] &quot;adj.r.squared&quot; &quot;fstatistic&quot;    &quot;cov.unscaled&quot;  &quot;na.action&quot;</code></pre>
+<pre class="r"><code>coef(fit)</code></pre>
+<pre><code>## (Intercept)       stars 
+##   -66.50023    44.11475</code></pre>
+<pre class="r"><code>broom::tidy(fit)</code></pre>
+<pre><code>## # A tibble: 2 × 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)    -66.5     11.9      -5.59 2.27e- 8
+## 2 stars           44.1      2.52     17.5  1.61e-68</code></pre>
+<pre class="r"><code>fit %&gt;% 
+  broom::tidy() %&gt;% 
+  select(term, estimate, p.value)</code></pre>
+<pre><code>## # A tibble: 2 × 3
+##   term        estimate  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)    -66.5 2.27e- 8
+## 2 stars           44.1 1.61e-68</code></pre>
+<pre class="r"><code>fit %&gt;% 
+  broom::glance()</code></pre>
+<pre><code>## # A tibble: 1 × 12
+##   r.squared adj.r.squared sigma statistic  p.value    df   logLik     AIC    BIC
+##       &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+## 1   0.00997       0.00994  184.      308. 1.61e-68     1 -202491. 404989. 4.05e5
+## # ℹ 3 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;, nobs &lt;int&gt;</code></pre>
+<p>Try something a bit more complex</p>
+<pre class="r"><code>fit =
+  lm(price ~ stars + borough, data = nyc_airbnb)
+# take all boroughs, take first one as reference, and make comparisons with that one. continue with the rest of the boroughs.
+
+fit %&gt;% 
+  broom::tidy() %&gt;% 
+  select(term, estimate, p.value) %&gt;% 
+  mutate(
+    term = str_replace(term, &quot;borough&quot;, &quot;Borough: &quot;)
+  ) %&gt;% 
+  knitr::kable(digits = 3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">19.839</td>
+<td align="right">0.104</td>
+</tr>
+<tr class="even">
+<td align="left">stars</td>
+<td align="right">31.990</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Borough: Brooklyn</td>
+<td align="right">-49.754</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Borough: Queens</td>
+<td align="right">-77.048</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Borough: Bronx</td>
+<td align="right">-90.254</td>
+<td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+</div>
 
 
 

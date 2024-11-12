@@ -234,6 +234,8 @@ nyc_airbnb %>%
     room_type == "Shared room"
   )
 
-# the outlier in the shared room boxplot comes from NoHo only having one shared room listing that is very expensive.
+# the outlier in the shared room boxplot comes from N
 ```
+
+
 

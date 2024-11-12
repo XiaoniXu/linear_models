@@ -65,7 +65,7 @@ train_df %>%
   add_predictions(linear_mod) %>% 
   ggplot(aes(x = range, y = logratio)) +
   geom_point() +
-  geom_point(data = test_df, color = "red") +
+  # geom_point(data = test_df, color = "red") +
   geom_line(aes(y = pred), color = "red")
 # a line is not complex enough
 
@@ -75,8 +75,28 @@ train_df %>%
   geom_point() +
   # geom_point(data = test_df, color = "red") +
   geom_line(aes(y = pred), color = "red")
+
+train_df %>% 
+  add_predictions(smooth_mod) %>% 
+  ggplot(aes(x = range, y = logratio)) +
+  geom_point() +
+  # geom_point(data = test_df, color = "red") +
+  geom_line(aes(y = pred), color = "red")
 ```
 
+Compare these numerically using RMSE
+
+```{r}
+rmse(linear_mod, test_df)
+
+rmse(wiggly_mod, test_df)
+
+rmse(smooth_mod, test_df)
+
+# is the difference between wiggly and smooth models significant?
+```
+
+## Repeat the train / test split
 
 
 
